@@ -1,8 +1,8 @@
 import express from 'express';
-import pool from "./config/db.js";
+import pool from "./config/db.js"; // just to log database status - for debugging purposes
 import apiRoutes from './router/apiRoute.js';
 import dotenv from 'dotenv';
-
+dotenv.config();
 
 const port = process.env.PORT || 5174;
 const app = express();
