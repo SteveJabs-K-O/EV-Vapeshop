@@ -7,7 +7,7 @@ const setRefreshToken = async (email, token) => {
         await pool.execute(query, values);
         
     } catch (err) {
-        console.error('Error inserting refresh token:', err);
+        throw err;
     }
 }
 

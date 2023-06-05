@@ -1,38 +1,14 @@
-import { generateAccessToken, generateRefreshToken } from '../utils/tokenGenerators.js';
-import { _createUser, _findEmail } from '../model/userModels.js';
-import setRefreshToken from '../model/setRefreshToken.js';
-import bcrypt from 'bcrypt';
-
-const createUser = async (req, res) => {
-    try {
-        const { firstname, lastname, email, password } = req.body;
-        const user = await _findEmail(email);
-
-        if (user) return res.status(400).json({ "success": false, "message": 'Email already used' });
-
-        const saltRounds  = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const userData = {
-            firstname,
-            lastname,
-            email,
-            password: hashedPassword
-        }
-
-        await _createUser(userData);
-        return res.json({ "success": true, "message": 'Successfully created' });
-
-    } catch (err) {
-        console.error('Error creating user:', err);
-    }
-}
+import { generateRefreshToken, generateAccessToken } from "../../utils/tokenGenerators.js";
+import { comparePass } from "../../utils/bcrypt.js";
+import setRefreshToken from "../../model/setRefreshToken.js";
+import _findEmail from "../../model/_User/_findEmail.js";
 
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await _findEmail(email);
         
-        const passwordMatch = user ? await bcrypt.compare(password, user.password): '';
+        const passwordMatch = user ? await comparePass(password, user.password): '';
         if (!user) {                          
             res.status(404).json({ "success": false, "message": 'Invalid Email' });
         }
@@ -67,5 +43,4 @@ const loginUser = async (req, res) => {
     }
 }
 
-
-export { createUser, loginUser };
+export default loginUser;

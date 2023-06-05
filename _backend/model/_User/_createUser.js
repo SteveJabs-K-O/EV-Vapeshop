@@ -1,4 +1,4 @@
-import pool from '../config/db.js';
+import pool from "../../config/db.js";
 
 const _createUser = async (userData) => {
     try {
@@ -10,19 +10,8 @@ const _createUser = async (userData) => {
         await pool.execute(query, values);
     } catch (err) {
         console.error('Error creating user:', err);
+        throw err;
     }
 }
 
-const _findEmail = async (email) => {
-    try {
-        const query = 'SELECT * FROM users WHERE email = ? LIMIT 1'; 
-        const [user] = await pool.execute(query, [email]);
-        
-        if(user.length === 0) return false;
-        return user[0];
-    } catch (err) {
-        console.error('Error finding email:', err);
-    }
-}
-
-export { _createUser, _findEmail };
+export default _createUser;
