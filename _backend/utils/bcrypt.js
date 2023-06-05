@@ -16,7 +16,7 @@ const hashPass = async (pass) => {
         const hashedPass = await bcrypt.hash(pass, saltRounds);
         return hashedPass;
     } catch (err) {
-        console.error('Error hashing password:', err);
+        console.error('Error hashing password: ', err);
         throw err;
     }
 };
