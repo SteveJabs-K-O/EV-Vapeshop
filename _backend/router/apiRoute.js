@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import createUser from '../controller/user/createUser.js';
-import loginUser from '../controller/user/login.js';
-import getAllProducts from '../controller/products/getAllProducts.js';
-import getVapes from '../controller/products/getVapes.js';
+import loginUser from '../controller/User/login.js';
+import getAllProducts from '../controller/Products/getAllProducts.js';
+import getVapes from '../controller/Products/getVapes.js';
 const router = Router();
 
 router.post('/user/signup', createUser);
