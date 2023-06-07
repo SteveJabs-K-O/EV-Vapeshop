@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    /* outline: 1px solid white; */
+    padding: 0px;
+    margin: 0px;
+}
+
+body {
+    color: white;
+    background-color: black;
+}
+#root {
+    display: flex;
+    justify-content: center;
+}
