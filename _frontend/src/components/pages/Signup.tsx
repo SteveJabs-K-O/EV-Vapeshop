@@ -1,38 +1,99 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, ChangeEvent, useState, useEffect } from "react";
 import { validateName, validateEmail, validatePassword, validatePassword2 } from "../utils/inputValidation";
-
+import { signup, SignupResponse } from "../../services/userAPI";
 
 const Signup = () => {
-    const [firstname, setFirstname] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [password2, setPassword2] = useState('');
-    const [fnameError, setFnameError] = useState('');
-    const [lnameError, setLnameError] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [passError, setPassError] = useState('');
-    const [pass2Error, setPass2Error] = useState('');
+    const [formData, setFormData] = useState({
+        firstname: '',
+        lastname: '',
+        email: '',
+        password: '',
+        password2: ''
+    });
 
+    const [formErrors, setFormErrors] = useState<{
+        firstname: string;
+        lastname: string;
+        email?: string; // to type email that so that it may set to string || undefined 
+        password: string;
+        password2: string;
+    }>({
+        firstname: '',
+        lastname: '',
+        email: undefined,
+        password: '',
+        password2: ''
+    });
+
+    const [successPrompt, setSuccessPrompt] = useState<string | undefined>('');
+
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: value
+        }));
+    };
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const { firstname, lastname, email, password, password2 } = formData;
 
-        const fnameErr = validateName(firstname, 'Firstname');
-        const lnameErr = validateName(lastname, 'Lastname');
-        const emailErr = validateEmail(email);
-        const passErr = validatePassword(password); 
-        const pass2Err = validatePassword2(password, password2); 
-        setFnameError(fnameErr);
-        setLnameError(lnameErr);
-        setEmailError(emailErr);
-        setPassError(passErr);
-        setPass2Error(pass2Err);
-    }
+        const errors = {
+            firstname: validateName(firstname, 'Firstname'),
+            lastname: validateName(lastname, 'Lastname'),
+            email: validateEmail(email),
+            password: validatePassword(password),
+            password2: validatePassword2(password, password2)
+        }
+
+        setFormErrors(errors);
+
+        const hasError = Object.values(errors).some((error) => error !== '');
+        if (!hasError) { // if all input are valid and no errors
+            try {
+                const res = await signup({
+                    firstname: formData.firstname,
+                    lastname: formData.lastname,
+                    email: formData.email,
+                    password: formData.password
+                });
+                const responseData = res?.data as SignupResponse;
+                if (responseData.success) setSuccessPrompt(responseData.message);
+                if (!responseData.success) { // ->> to set email error if email is already taken
+                    setFormErrors((prevFormErrors) => ({
+                      ...prevFormErrors,
+                      email: responseData.message
+                    }));
+                }
+            } catch (error) {
+                console.error(error);
+            }            
+        }
+    };
+
+    useEffect(() => {
+        if (successPrompt) {
+            const timer  = setTimeout(() => {
+                setSuccessPrompt('');
+            }, 1500); // success prompt 1.5seconds before it fades out
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [successPrompt]);
 
  
     return(
-        <div className="flex h-screen w-full items-center justify-center bg-gray-800 bg-cover bg-no-repeat" style={{backgroundImage:"url('/smoke-bg.gif')"}}>
-            <div className="rounded-xl bg-black bg-opacity-80 px-12 py-4 shadow-lg backdrop-blur-md max-sm:px-8 border-2 border-gray-400">
+        <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-800 bg-cover bg-no-repeat " style={{backgroundImage:"url('/smoke-bg.gif')"}}>
+        {successPrompt && (
+            <div className="absolute top-0 z-50 w-full flex justify-center mt-6 bg-g">
+                <div className="bg-green-400 text-green-900 rounded-md py-2 px-4">
+                    <span>{successPrompt}</span>
+                </div>
+            </div>
+        )}
+            <div className="absolute rounded-xl bg-black bg-opacity-80 px-12 py-4 shadow-lg backdrop-blur-md max-sm:px-8 border-2 border-gray-400">
                 <div className="mb-4 flex flex-col items-center">
                     <h1 className="mb-2 text-2xl font-extrabold tracking-wider">Signup</h1>
                 </div>
@@ -43,10 +104,10 @@ const Signup = () => {
                             type="text" 
                             name="firstname" 
                             placeholder="firstname"
-                            value={firstname}
-                            onChange={(e) => setFirstname(e.target.value)}
+                            value={formData.firstname}
+                            onChange={handleChange}
                         />
-                        {fnameError && <div className='text-red-500' style={{ fontSize: '16px' }}>{fnameError}</div>}
+                        {formErrors.firstname && <div className='text-red-500' style={{ fontSize: '16px' }}>{formErrors.firstname}</div>}
                     </div>
                     <div className="mb-4 text-lg">
                         <input 
@@ -54,10 +115,10 @@ const Signup = () => {
                             type="text" 
                             name="lastname" 
                             placeholder="lastname" 
-                            value={lastname}
-                            onChange={(e) => setLastname(e.target.value)}
+                            value={formData.lastname}
+                            onChange={handleChange}
                         />
-                        {lnameError && <div className='text-red-500' style={{ fontSize: '16px' }}>{lnameError}</div>}
+                        {formErrors.lastname && <div className='text-red-500' style={{ fontSize: '16px' }}>{formErrors.lastname}</div>}
                     </div>
                     <div className="mb-4 text-lg">
                         <input 
@@ -65,32 +126,32 @@ const Signup = () => {
                             type="text" 
                             name="email" 
                             placeholder="email" 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={formData.email}
+                            onChange={handleChange}
                         />
-                        {emailError && <div className='text-red-500' style={{ fontSize: '16px' }}>{emailError}</div>}
+                        {formErrors.email && <div className='text-red-500' style={{ fontSize: '16px' }}>{formErrors.email}</div>}
                     </div>
                     <div className="mb-4 text-lg">
                         <input 
                             className="rounded-md text-white border-2 py-1 px-2 bg-white bg-opacity-10" 
                             type="Password" 
                             name="password" 
-                            placeholder="password" 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="password"
+                            value={formData.password}
+                            onChange={handleChange}
                         />
-                        {passError && <div className='text-red-500' style={{ fontSize: '16px' }}>{passError}</div>}
+                        {formErrors.password && <div className='text-red-500' style={{ fontSize: '16px' }}>{formErrors.password}</div>}
                     </div>
                     <div className="mb-4 text-lg">
                         <input 
                             className="rounded-md text-white border-2 py-1 px-2 bg-white bg-opacity-10" 
                             type="Password" 
-                            name="password" 
-                            placeholder="confirm password" 
-                            value={password2}
-                            onChange={(e) => setPassword2(e.target.value)}
+                            name="password2" 
+                            placeholder="confirm password"
+                            value={formData.password2}
+                            onChange={handleChange}
                         />
-                        {pass2Error && <div className='text-red-500' style={{ fontSize: '16px' }}>{pass2Error}</div>}
+                        {formErrors.password2 && <div className='text-red-500' style={{ fontSize: '16px' }}>{formErrors.password2}</div>}
                     </div>
                     <span><a href="/login" className="hover:text-gray-400 my-0 underline">Already have account?</a></span>
                     <div className="mt-4 flex justify-center text-lg text-black">
