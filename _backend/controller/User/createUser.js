@@ -7,7 +7,7 @@ const createUser = async (req, res) => {
         const { firstname, lastname, email, password } = req.body;
         const user = await _findEmail(email);
 
-        if (user) return res.status(400).json({ "success": false, "message": 'Email already used' });
+        if (user) return res.status(200).json({ "success": false, "message": 'Email already used' });
 
         const hashedPassword = await hashPass(password);
         const userData = {
@@ -18,9 +18,10 @@ const createUser = async (req, res) => {
         }
         await _createUser(userData);
 
-        return res.json({ "success": true, "message": 'Successfully created' });
+        return res.status(201).json({ "success": true, "message": 'Successfully created' });
     } catch (err) {
         console.error('Error creating user:', err);
+        return res.status(500).json({ "success": false, "message": 'Server error' });
     }
 }
 
