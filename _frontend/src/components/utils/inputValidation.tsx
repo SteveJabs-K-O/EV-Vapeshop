@@ -26,8 +26,8 @@ const validatePassword = (pass: string) => {
 }
 
 const validatePassword2 = (pass1: string, pass2: string) => {
+    if (pass1.length >= 4 && pass1 && !pass2) return 'Repeat password';
     if (pass1.length >= 4 && pass1 !== pass2) return "Password doesn't match";
-    if (pass1.length > 4 && pass1 && !pass2) return 'repeat password';
     return '';
 }
 
