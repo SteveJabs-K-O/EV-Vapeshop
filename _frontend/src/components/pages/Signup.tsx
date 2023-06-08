@@ -1,6 +1,6 @@
 import { FormEvent, ChangeEvent, useState, useEffect } from "react";
 import { validateName, validateEmail, validatePassword, validatePassword2 } from "../utils/inputValidation";
-import { signup, SignupResponse } from "../../services/userAPI";
+import { signup, Response } from "../../services/userAPI";
 
 const Signup = () => {
     const [formData, setFormData] = useState({
@@ -57,17 +57,26 @@ const Signup = () => {
                     email: formData.email,
                     password: formData.password
                 });
-                const responseData = res?.data as SignupResponse;
+
+                const responseData = res?.data as Response;
                 if (responseData.success) setSuccessPrompt(responseData.message);
                 if (!responseData.success) { // ->> to set email error if email is already taken
                     setFormErrors((prevFormErrors) => ({
-                      ...prevFormErrors,
-                      email: responseData.message
-                    }));
+                        ...prevFormErrors,
+                        email: responseData.message
+                    })); 
                 }
+
+                setFormData({ // -> to reset all input fields after a successful signup
+                    firstname: '',
+                    lastname: '',
+                    email: '',
+                    password: '',
+                    password2: ''
+                });
             } catch (error) {
                 console.error(error);
-            }            
+            }    
         }
     };
 
@@ -82,7 +91,6 @@ const Signup = () => {
             };
         }
     }, [successPrompt]);
-
  
     return(
         <div className="flex flex-col h-screen w-full items-center justify-center bg-gray-800 bg-cover bg-no-repeat " style={{backgroundImage:"url('/smoke-bg.gif')"}}>
