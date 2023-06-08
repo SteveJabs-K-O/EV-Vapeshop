@@ -7,13 +7,17 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await _findEmail(email);
+
+        let responseData = {};
         
         const passwordMatch = user ? await comparePass(password, user.password): '';
-        if (!user) {                          
-            res.status(404).json({ "success": false, "message": 'Invalid Email' });
+        if (!user) {   
+            responseData = { "success": false, "message": 'Invalid Email' };                      
+            res.status(404).json(responseData);
         }
-        else if (user && !passwordMatch) {    
-            res.status(401).json({ "success": false, "message": 'Wrong Password' }); 
+        else if (user && !passwordMatch) {  
+            responseData = { "success": false, "message": 'Wrong Password' };  
+            res.status(401).json(responseData); 
         }
         else if (user && passwordMatch) {
             console.log('USER LOGIN');
@@ -39,7 +43,7 @@ const loginUser = async (req, res) => {
 
     } catch (err) {
         console.error('Error login user:', err);
-        res.status(500).json({ "success": false, "message": 'Internal Server Error' });
+        return res.status(500).json({ "success": false, "message": 'Internal Server Error' });
     }
 }
 
